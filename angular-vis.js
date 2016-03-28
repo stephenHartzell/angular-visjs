@@ -1,225 +1,235 @@
 angular.module('ngVis', [])
 
-    .factory('VisDataSet', function () {
-        'use strict';
-        return function (data, options) {
-            // Create the new dataSets
-            return new vis.DataSet(data, options);
-        };
-    })
+  .factory('VisDataSet', function () {
+      'use strict';
+      return function (data, options) {
+          // Create the new dataSets
+          return new vis.DataSet(data, options);
+      };
+  })
 
-/**
- * TimeLine directive
- */
-    .directive('visTimeline', function () {
-        'use strict';
-        return {
-            restrict: 'EA',
-            transclude: false,
-            scope: {
-                data: '=',
-                options: '=',
-                events: '='
-            },
-            link: function (scope, element, attr) {
-                var timelineEvents = [
-                    'rangechange',
-                    'rangechanged',
-                    'timechange',
-                    'timechanged',
-                    'select',
-                    'doubleClick',
-                    'click',
-                    'contextmenu'
-                ];
+  /**
+   * TimeLine directive
+   */
+  .directive('visTimeline', function () {
+      'use strict';
+      return {
+          restrict: 'EA',
+          transclude: false,
+          scope: {
+              data: '=',
+              options: '=',
+              events: '=',
+              time: '='
+          },
+          link: function (scope, element, attr) {
+              var timelineEvents = [
+                  'rangechange',
+                  'rangechanged',
+                  'timechange',
+                  'timechanged',
+                  'select',
+                  'doubleClick',
+                  'click',
+                  'contextmenu'
+              ];
 
-                // Declare the timeline
-                var timeline = null;
+              // Declare the timeline
+              var timeline = null;
 
-                scope.$watch('data', function () {
-                    // Sanity check
-                    if (scope.data == null) {
-                        return;
-                    }
+              scope.$watch('data', function () {
+                  // Sanity check
+                  if (scope.data == null) {
+                      return;
+                  }
 
-                    // If we've actually changed the data set, then recreate the graph
-                    // We can always update the data by adding more data to the existing data set
-                    if (timeline != null) {
-                        timeline.destroy();
-                    }
+                  // If we've actually changed the data set, then recreate the graph
+                  // We can always update the data by adding more data to the existing data set
+                  if (timeline != null) {
+                      timeline.destroy();
+                  }
 
-                    // Create the timeline object
-                    timeline = new vis.Timeline(element[0], scope.data.items, scope.data.groups, scope.options);
+                  // Create the timeline object
+                  timeline = new vis.Timeline(element[0], scope.data.items, scope.data.groups, scope.options);
+                  var date = new Date();
+                  timeline.addCustomTime([date] ["time"]);
 
-                    // Attach an event handler if defined
-                    angular.forEach(scope.events, function (callback, event) {
-                        if (timelineEvents.indexOf(String(event)) >= 0) {
-                            timeline.on(event, callback);
-                        }
-                    });
+                  // Attach an event handler if defined
+                  angular.forEach(scope.events, function (callback, event) {
+                      if (timelineEvents.indexOf(String(event)) >= 0) {
+                          timeline.on(event, callback);
+                      }
+                  });
 
-                    // onLoad callback
-                    if (scope.events != null && scope.events.onload != null &&
-                        angular.isFunction(scope.events.onload)) {
-                        scope.events.onload(timeline);
-                    }
-                });
+                  // onLoad callback
+                  if (scope.events != null && scope.events.onload != null &&
+                    angular.isFunction(scope.events.onload)) {
+                      scope.events.onload(timeline);
+                  }
+              });
 
-                scope.$watchCollection('options', function (options) {
-                    if (timeline == null) {
-                        return;
-                    }
-                    timeline.setOptions(options);
-                });
-            }
-        };
-    })
+              scope.$watchCollection('options', function (options) {
+                  if (timeline == null) {
+                      return;
+                  }
+                  timeline.setOptions(options);
+              });
 
-/**
- * Directive for network chart.
- */
-    .directive('visNetwork', function () {
-        return {
-            restrict: 'EA',
-            transclude: false,
-            scope: {
-                data: '=',
-                options: '=',
-                events: '='
-            },
-            link: function (scope, element, attr) {
-                var networkEvents = [
-                    'click',
-                    'doubleClick',
-                    'oncontext',
-                    'hold',
-                    'release',
-                    'selectNode',
-                    'selectEdge',
-                    'deselectNode',
-                    'deselectEdge',
-                    'dragStart',
-                    'dragging',
-                    'dragEnd',
-                    'hoverNode',
-                    'blurNode',
-                    'zoom',
-                    'showPopup',
-                    'hidePopup',
-                    'startStabilizing',
-                    'stabilizationProgress',
-                    'stabilizationIterationsDone',
-                    'stabilized',
-                    'resize',
-                    'initRedraw',
-                    'beforeDrawing',
-                    'afterDrawing',
-                    'animationFinished'
+              scope.$watch('time', function (time) {
+                  if (timeline == null || time == null) {
+                      return;
+                  }
+                  timeline.setCustomTime(time);
+              });
+          }
+      };
+  })
 
-                ];
+  /**
+   * Directive for network chart.
+   */
+  .directive('visNetwork', function () {
+      return {
+          restrict: 'EA',
+          transclude: false,
+          scope: {
+              data: '=',
+              options: '=',
+              events: '='
+          },
+          link: function (scope, element, attr) {
+              var networkEvents = [
+                  'click',
+                  'doubleclick',
+                  'oncontext',
+                  'hold',
+                  'release',
+                  'selectNode',
+                  'selectEdge',
+                  'deselectNode',
+                  'deselectEdge',
+                  'dragStart',
+                  'dragging',
+                  'dragEnd',
+                  'hoverNode',
+                  'blurNode',
+                  'zoom',
+                  'showPopup',
+                  'hidePopup',
+                  'startStabilizing',
+                  'stabilizationProgress',
+                  'stabilizationIterationsDone',
+                  'stabilized',
+                  'resize',
+                  'initRedraw',
+                  'beforeDrawing',
+                  'afterDrawing',
+                  'animationFinished'
 
-                var network = null;
+              ];
 
-                scope.$watch('data', function () {
-                    // Sanity check
-                    if (scope.data == null) {
-                        return;
-                    }
+              var network = null;
 
-                    // If we've actually changed the data set, then recreate the graph
-                    // We can always update the data by adding more data to the existing data set
-                    if (network != null) {
-                        network.destroy();
-                    }
+              scope.$watch('data', function () {
+                  // Sanity check
+                  if (scope.data == null) {
+                      return;
+                  }
 
-                    // Create the graph2d object
-                    network = new vis.Network(element[0], scope.data, scope.options);
+                  // If we've actually changed the data set, then recreate the graph
+                  // We can always update the data by adding more data to the existing data set
+                  if (network != null) {
+                      network.destroy();
+                  }
 
-                    // Attach an event handler if defined
-                    angular.forEach(scope.events, function (callback, event) {
-                        if (networkEvents.indexOf(String(event)) >= 0) {
-                            network.on(event, callback);
-                        }
-                    });
+                  // Create the graph2d object
+                  network = new vis.Network(element[0], scope.data, scope.options);
 
-                    // onLoad callback
-                    if (scope.events != null && scope.events.onload != null &&
-                        angular.isFunction(scope.events.onload)) {
-                        scope.events.onload(network);
-                    }
-                });
+                  // Attach an event handler if defined
+                  angular.forEach(scope.events, function (callback, event) {
+                      if (networkEvents.indexOf(String(event)) >= 0) {
+                          network.on(event, callback);
+                      }
+                  });
 
-                scope.$watchCollection('options', function (options) {
-                    if (network == null) {
-                        return;
-                    }
-                    network.setOptions(options);
-                });
-            }
-        };
-    })
+                  // onLoad callback
+                  if (scope.events != null && scope.events.onload != null &&
+                    angular.isFunction(scope.events.onload)) {
+                      scope.events.onload(network);
+                  }
+              });
 
-/**
- * Directive for graph2d.
- */
-    .directive('visGraph2d', function () {
-        'use strict';
-        return {
-            restrict: 'EA',
-            transclude: false,
-            scope: {
-                data: '=',
-                options: '=',
-                events: '='
-            },
-            link: function (scope, element, attr) {
-                var graphEvents = [
-                    'rangechange',
-                    'rangechanged',
-                    'timechange',
-                    'timechanged',
-                    'finishedRedraw'
-                ];
+              scope.$watchCollection('options', function (options) {
+                  if (network == null) {
+                      return;
+                  }
+                  network.setOptions(options);
+              });
+          }
+      };
+  })
 
-                // Create the chart
-                var graph = null;
+  /**
+   * Directive for graph2d.
+   */
+  .directive('visGraph2d', function () {
+      'use strict';
+      return {
+          restrict: 'EA',
+          transclude: false,
+          scope: {
+              data: '=',
+              options: '=',
+              events: '='
+          },
+          link: function (scope, element, attr) {
+              var graphEvents = [
+                  'rangechange',
+                  'rangechanged',
+                  'timechange',
+                  'timechanged',
+                  'finishedRedraw'
+              ];
 
-                scope.$watch('data', function () {
-                    // Sanity check
-                    if (scope.data == null) {
-                        return;
-                    }
+              // Create the chart
+              var graph = null;
 
-                    // If we've actually changed the data set, then recreate the graph
-                    // We can always update the data by adding more data to the existing data set
-                    if (graph != null) {
-                        graph.destroy();
-                    }
+              scope.$watch('data', function () {
+                  // Sanity check
+                  if (scope.data == null) {
+                      return;
+                  }
 
-                    // Create the graph2d object
-                    graph = new vis.Graph2d(element[0], scope.data.items, scope.data.groups, scope.options);
+                  // If we've actually changed the data set, then recreate the graph
+                  // We can always update the data by adding more data to the existing data set
+                  if (graph != null) {
+                      graph.destroy();
+                  }
 
-                    // Attach an event handler if defined
-                    angular.forEach(scope.events, function (callback, event) {
-                        if (graphEvents.indexOf(String(event)) >= 0) {
-                            graph.on(event, callback);
-                        }
-                    });
+                  // Create the graph2d object
+                  graph = new vis.Graph2d(element[0], scope.data.items, scope.data.groups, scope.options);
 
-                    // onLoad callback
-                    if (scope.events != null && scope.events.onload != null &&
-                        angular.isFunction(scope.events.onload)) {
-                        scope.events.onload(graph);
-                    }
-                });
+                  // Attach an event handler if defined
+                  angular.forEach(scope.events, function (callback, event) {
+                      if (graphEvents.indexOf(String(event)) >= 0) {
+                          graph.on(event, callback);
+                      }
+                  });
 
-                scope.$watchCollection('options', function (options) {
-                    if (graph == null) {
-                        return;
-                    }
-                    graph.setOptions(options);
-                });
-            }
-        };
-    })
+                  // onLoad callback
+                  if (scope.events != null && scope.events.onload != null &&
+                    angular.isFunction(scope.events.onload)) {
+                      scope.events.onload(graph);
+                  }
+              });
+
+              scope.$watchCollection('options', function (options) {
+                  if (graph == null) {
+                      return;
+                  }
+                  graph.setOptions(options);
+              });
+          }
+      };
+  })
 ;
