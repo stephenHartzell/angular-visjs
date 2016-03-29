@@ -34,7 +34,6 @@ var bannerPlugin = new webpack.BannerPlugin(createBanner(), {
   raw: true
 });
 
-// TODO: the moment.js language files should be excluded by default (they are quite big)
 var webpackConfig = {
   entry: ENTRY,
   output: {
@@ -44,12 +43,26 @@ var webpackConfig = {
     filename: VIS_JS,
     sourcePrefix: '  '
   },
-  // exclude requires of moment.js language files
   module: {
+    loaders: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel',
+        query: {
+          cacheDirectory: true,
+          presets: ['es2015']
+        }
+      }
+    ],
+
+    // exclude requires of moment.js language files
     wrappedContextRegExp: /$^/
   },
   plugins: [ bannerPlugin ],
   cache: true
+  //debug: true,
+  //bail: true
 };
 
 var uglifyConfig = {
@@ -72,7 +85,20 @@ gulp.task('bundle-js', ['clean'], function (cb) {
   bannerPlugin.banner = createBanner();
 
   compiler.run(function (err, stats) {
-    if (err) gutil.log(err);
+    if (err) {
+      gutil.log(err.toString());
+    }
+
+    if (stats && stats.compilation && stats.compilation.errors) {
+      // output soft errors
+      stats.compilation.errors.forEach(function (err) {
+        gutil.log(err.toString());
+      });
+
+      if (err || stats.compilation.errors.length > 0) {
+        gutil.beep(); // TODO: this does not work on my system
+      }
+    }
     cb();
   });
 });
@@ -82,6 +108,7 @@ gulp.task('bundle-css', ['clean'], function () {
   var files = [
     './lib/shared/activator.css',
     './lib/shared/bootstrap.css',
+    './lib/shared/configuration.css',
 
     './lib/timeline/component/css/timeline.css',
     './lib/timeline/component/css/panel.css',
@@ -97,8 +124,9 @@ gulp.task('bundle-css', ['clean'], function () {
     './lib/timeline/component/css/pathStyles.css',
 
     './lib/network/css/network-manipulation.css',
+    './lib/network/css/network-tooltip.css',
     './lib/network/css/network-navigation.css',
-    './lib/network/css/network-tooltip.css'
+    './lib/network/css/network-colorpicker.css'
   ];
 
   return gulp.src(files)
@@ -112,13 +140,13 @@ gulp.task('bundle-css', ['clean'], function () {
 });
 
 gulp.task('copy', ['clean'], function () {
-  var network = gulp.src('./lib/network/img/**/*')
+    var network = gulp.src('./lib/network/img/**/*')
       .pipe(gulp.dest(DIST + '/img/network'));
 
-  var timeline = gulp.src('./lib/timeline/img/**/*')
+    var timeline = gulp.src('./lib/timeline/img/**/*')
       .pipe(gulp.dest(DIST + '/img/timeline'));
 
-  return merge(network, timeline);
+    return merge(network, timeline);
 });
 
 gulp.task('minify', ['bundle-js'], function (cb) {
@@ -128,7 +156,7 @@ gulp.task('minify', ['bundle-js'], function (cb) {
   //       any issues when concatenating the file downstream (the file ends
   //       with a comment).
   fs.writeFileSync(DIST + '/' + VIS_MIN_JS, result.code + '\n');
-  fs.writeFileSync(DIST + '/' + VIS_MAP, result.map);
+  fs.writeFileSync(DIST + '/' + VIS_MAP, result.map.replace(/"\.\/dist\//g, '"'));
 
   cb();
 });
