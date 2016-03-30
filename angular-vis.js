@@ -11,7 +11,7 @@ angular.module('ngVis', [])
   /**
    * TimeLine directive
    */
-  .directive('visTimeline', function () {
+  .directive('visTimeline', function (VisDataSet) {
       'use strict';
       return {
           restrict: 'E',
@@ -39,11 +39,13 @@ angular.module('ngVis', [])
               var timeline = null;
               var timelineElement = element[0].children[0];
 
-              scope.$watch('data', function () {
+              scope.$watchCollection('data', function (data) {
                   // Sanity check
                   if (scope.data == null) {
                       return;
                   }
+                  var items = VisDataSet(data.items);
+                  var groups = VisDataSet(data.groups);
 
                   // If we've actually changed the data set, then recreate the graph
                   // We can always update the data by adding more data to the existing data set
@@ -52,7 +54,7 @@ angular.module('ngVis', [])
                   }
 
                   // Create the timeline object
-                  timeline = new vis.Timeline(timelineElement, scope.data.items, scope.data.groups, scope.options);
+                  timeline = new vis.Timeline(timelineElement, items, groups, scope.options);
                   var date = new Date();
                   timeline.addCustomTime([date] ["time"]);
 
