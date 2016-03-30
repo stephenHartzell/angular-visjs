@@ -14,7 +14,8 @@ angular.module('ngVis', [])
   .directive('visTimeline', function () {
       'use strict';
       return {
-          restrict: 'EA',
+          restrict: 'E',
+          template: '<div></div>',
           transclude: false,
           scope: {
               data: '=',
@@ -36,6 +37,7 @@ angular.module('ngVis', [])
 
               // Declare the timeline
               var timeline = null;
+              var timelineElement = element[0].children[0];
 
               scope.$watch('data', function () {
                   // Sanity check
@@ -50,7 +52,7 @@ angular.module('ngVis', [])
                   }
 
                   // Create the timeline object
-                  timeline = new vis.Timeline(element[0], scope.data.items, scope.data.groups, scope.options);
+                  timeline = new vis.Timeline(timelineElement, scope.data.items, scope.data.groups, scope.options);
                   var date = new Date();
                   timeline.addCustomTime([date] ["time"]);
 

@@ -42,7 +42,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, VisD
         orientation: 'bottom',
         // padding: 5,
         showCurrentTime: true,
-        showCustomTime: true,
         showMajorLabels: true,
         showMinorLabels: true
         // type: 'box', // dot | point
