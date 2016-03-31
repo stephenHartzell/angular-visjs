@@ -21,7 +21,7 @@ angular.module('ngVis', [])
               data: '=',
               options: '=',
               events: '=',
-              time: '='
+              datetime: '='
           },
           link: function (scope, element, attr) {
               var timelineEvents = [
@@ -38,6 +38,7 @@ angular.module('ngVis', [])
               // Declare the timeline
               var timeline = null;
               var timelineElement = element[0].children[0];
+              var datetimeInit = false;
 
               scope.$watchCollection('data', function (data) {
                   // Sanity check
@@ -53,8 +54,6 @@ angular.module('ngVis', [])
 
                   // Create the timeline object
                   timeline = new vis.Timeline(timelineElement, scope.data.items, scope.data.groups, scope.options);
-                  var date = new Date();
-                  timeline.addCustomTime([date] ["time"]);
 
                   // Attach an event handler if defined
                   angular.forEach(scope.events, function (callback, event) {
@@ -77,11 +76,15 @@ angular.module('ngVis', [])
                   timeline.setOptions(options);
               });
 
-              scope.$watch('time', function (time) {
-                  if (timeline == null || time == null) {
-                      return;
-                  }
-                  timeline.setCustomTime(time);
+              scope.$watch('datetime', function(datetime){
+                if(angular.isUndefined(datetime) || datetime == null) return;
+                if(datetimeInit){
+                  timeline.setCustomTime(datetime);
+                }else{
+                  timeline.addCustomTime("time");
+                  timeline.setCustomTime(datetime);
+                  datetimeInit = true;
+                }
               });
           }
       };
